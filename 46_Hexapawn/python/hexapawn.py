@@ -61,12 +61,12 @@ wins = 0
 losses = 0
 
 
-def print_centered(msg):
+def print_centered(msg: str) -> None:
     spaces = " " * ((PAGE_WIDTH - len(msg)) // 2)
     print(spaces + msg)
 
 
-def print_header(title):
+def print_header(title: str) -> None:
     print_centered(title)
     print_centered("CREATIVE COMPUTING  MORRISTOWN, NEW JERSEY")
     print()
@@ -74,7 +74,7 @@ def print_header(title):
     print()
 
 
-def print_instructions():
+def print_instructions() -> None:
     print(
         """
 THIS PROGRAM PLAYS THE GAME OF HEXAPAWN.
@@ -138,10 +138,10 @@ class BoardLayout:
         self.moves = move_list
 
     def _check_match_no_mirror(self, cell_list):
-        for space_index, board_contents in enumerate(self.cells):
-            if board_contents != cell_list[space_index]:
-                return False
-        return True
+        return all(
+            board_contents == cell_list[space_index]
+            for space_index, board_contents in enumerate(self.cells)
+        )
 
     def _check_match_with_mirror(self, cell_list):
         for space_index, board_contents in enumerate(self.cells):
@@ -215,7 +215,7 @@ def init_board():
     return [COMPUTER_PIECE] * 3 + [EMPTY_SPACE] * 3 + [HUMAN_PIECE] * 3
 
 
-def print_board(board):
+def print_board(board) -> None:
     piece_dict = {COMPUTER_PIECE: "X", EMPTY_SPACE: ".", HUMAN_PIECE: "O"}
 
     space = " " * 10
@@ -238,11 +238,11 @@ def get_coordinates():
             response = input()
             m1, m2 = (int(c) for c in response.split(","))
             return m1, m2
-        except ValueError as ve:
+        except ValueError:
             print_illegal()
 
 
-def print_illegal():
+def print_illegal() -> None:
     print("ILLEGAL MOVE.")
 
 
@@ -286,17 +286,11 @@ def is_legal_human_move(board, m1, m2):
 
 
 def player_piece_on_back_row(board):
-    for space in range(1, 4):
-        if board_contents(board, space) == HUMAN_PIECE:
-            return True
-    return False
+    return any(board_contents(board, space) == HUMAN_PIECE for space in range(1, 4))
 
 
 def computer_piece_on_front_row(board):
-    for space in range(7, 10):
-        if board_contents(board, space) == COMPUTER_PIECE:
-            return True
-    return False
+    return any(board_contents(board, space) == COMPUTER_PIECE for space in range(7, 10))
 
 
 def all_human_pieces_captured(board):
@@ -385,7 +379,6 @@ def get_computer_spaces(board):
 
 def has_computer_move(board):
     for i in get_computer_spaces(board):
-        found_move = False
         if board_contents(board, i + 3) == EMPTY_SPACE:
             # can move forward (down)
             return True
@@ -419,9 +412,9 @@ def find_board_index_that_matches_board(board):
         if matches:
             return board_index, is_reversed
 
-    # THE TERMINATION OF THIS LOOP IS IMPOSSIBLE
-    print("ILLEGAL BOARD PATTERN.")
-    assert False
+    # This point should never be reached
+    # In future, mypy might be able to check exhaustiveness via assert_never
+    raise RuntimeError("ILLEGAL BOARD PATTERN.")
 
 
 def pick_computer_move(board):
@@ -496,7 +489,7 @@ def play_game():
             return
 
 
-def main():
+def main() -> None:
     print_header("HEXAPAWN")
     if prompt_yes_no("INSTRUCTIONS (Y-N)?"):
         print_instructions()
